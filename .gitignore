@@ -4,6 +4,9 @@ _*.py
 _*.js
 *.tmp
 
+# binary build artifacts — distributed via GitHub Releases, not git
+dist/
+
 # OS
 Thumbs.db
 .DS_Store
