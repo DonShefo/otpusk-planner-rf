@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+    <rect width="800" height="500" fill="#EAE5DC"></rect>
+    <rect x="40" y="40" width="720" height="60" rx="10" fill="#FDFAF5" stroke="#DDD6C8" stroke-width="1.5"></rect>
+    <text x="68" y="79" font-family="system-ui" font-size="26" font-weight="700" fill="#1C1915">График отпусков 2026</text>
+    <rect x="40" y="120" width="720" height="260" rx="10" fill="#FDFAF5" stroke="#DDD6C8" stroke-width="1.5"></rect>
+    <rect x="56" y="140" width="160" height="16" rx="4" fill="#DDD6C8"></rect>
+    <rect x="240" y="140" width="80" height="16" rx="4" fill="#3E68B0" opacity=".4"></rect>
+    <rect x="340" y="140" width="120" height="16" rx="4" fill="#3E68B0" opacity=".4"></rect>
+    <rect x="480" y="140" width="60" height="16" rx="4" fill="#3E68B0" opacity=".4"></rect>
+    <rect x="56" y="170" width="100" height="14" rx="3" fill="#EDE8DC"></rect>
+    <rect x="240" y="168" width="90" height="18" rx="5" fill="#3E68B0" opacity=".8"></rect>
+    <rect x="380" y="168" width="130" height="18" rx="5" fill="#3E68B0" opacity=".7"></rect>
+    <rect x="56" y="202" width="120" height="14" rx="3" fill="#EDE8DC"></rect>
+    <rect x="260" y="200" width="70" height="18" rx="5" fill="#5BA85A" opacity=".8"></rect>
+    <rect x="400" y="200" width="110" height="18" rx="5" fill="#5BA85A" opacity=".7"></rect>
+    <rect x="560" y="200" width="80" height="18" rx="5" fill="#5BA85A" opacity=".5"></rect>
+    <rect x="56" y="234" width="110" height="14" rx="3" fill="#EDE8DC"></rect>
+    <rect x="300" y="232" width="60" height="18" rx="5" fill="#D97A3A" opacity=".8"></rect>
+    <rect x="420" y="232" width="100" height="18" rx="5" fill="#D97A3A" opacity=".7"></rect>
+    <rect x="56" y="266" width="130" height="14" rx="3" fill="#EDE8DC"></rect>
+    <rect x="250" y="264" width="85" height="18" rx="5" fill="#9B59B6" opacity=".7"></rect>
+    <rect x="390" y="264" width="120" height="18" rx="5" fill="#9B59B6" opacity=".8"></rect>
+    <rect x="560" y="264" width="70" height="18" rx="5" fill="#9B59B6" opacity=".5"></rect>
+    <rect x="56" y="298" width="115" height="14" rx="3" fill="#EDE8DC"></rect>
+    <rect x="280" y="296" width="100" height="18" rx="5" fill="#E74C3C" opacity=".7"></rect>
+    <rect x="440" y="296" width="90" height="18" rx="5" fill="#E74C3C" opacity=".6"></rect>
+    <rect x="40" y="400" width="720" height="80" rx="10" fill="#FDFAF5" stroke="#DDD6C8" stroke-width="1.5"></rect>
+    <rect x="56" y="416" width="20" height="48" rx="3" fill="#3E68B0" opacity=".3"></rect>
+    <rect x="82" y="426" width="20" height="38" rx="3" fill="#3E68B0" opacity=".5"></rect>
+    <rect x="108" y="420" width="20" height="44" rx="3" fill="#3E68B0" opacity=".7"></rect>
+    <rect x="134" y="430" width="20" height="34" rx="3" fill="#3E68B0" opacity=".4"></rect>
+    <rect x="160" y="424" width="20" height="40" rx="3" fill="#E74C3C" opacity=".7"></rect>
+    <rect x="186" y="418" width="20" height="46" rx="3" fill="#E74C3C" opacity=".5"></rect>
+  </svg>

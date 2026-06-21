@@ -1,0 +1,10 @@
+# backups / temp
+*.bak
+_*.py
+_*.js
+*.tmp
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
