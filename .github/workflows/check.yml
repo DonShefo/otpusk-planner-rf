@@ -1,0 +1,22 @@
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Зависимостей и сборки нет: приложение — один index.html. Проверка синтаксиса скриптов бандла,
+      # офлайн-режима (нет сетевых вызовов) и скрипта темы.
+      - run: node scripts/check.mjs
