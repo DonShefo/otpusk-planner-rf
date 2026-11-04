@@ -11,3 +11,8 @@ dist/
 Thumbs.db
 .DS_Store
 desktop.ini
+
+# Development-only browser tests
+node_modules/
+test-results/
+playwright-report/

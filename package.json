@@ -1,0 +1,16 @@
+{
+  "name": "otpusk-planner-rf",
+  "version": "3.0.1",
+  "private": true,
+  "description": "Offline single-file vacation planner with a portable multi-year JSON database",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test tests/core.test.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "package": "node scripts/package-release.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
+}
