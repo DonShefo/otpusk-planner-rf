@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+  <title id="title">График отпусков</title>
+  <desc id="desc">Vacation Planner для России. Весь год перед глазами. Обложка с декоративной сеткой календаря.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#102d26"/><stop offset="1" stop-color="#1f493d"/></linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#dce9c4" stroke-opacity=".045"/></pattern>
+  </defs>
+  <rect width="1200" height="320" rx="20" fill="url(#bg)"/>
+  <rect width="1200" height="320" rx="20" fill="url(#grid)"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
+    <rect x="48" y="38" width="249" height="29" rx="14.5" fill="#c9dd82"/>
+    <text x="64" y="58" font-size="13" font-weight="700" letter-spacing="1.3" fill="#16392d">VACATION PLANNER / РФ</text>
+    <text x="48" y="138" font-size="54" font-weight="700" letter-spacing="-1.7" fill="#fffdf5">График отпусков</text>
+    <text x="51" y="181" font-size="23" fill="#d2dfd6">Весь год перед глазами.</text>
+    <path d="M51 219H111" stroke="#c9dd82" stroke-width="3"/>
+    <text x="51" y="262" font-size="16" fill="#acbeb4">Без установки</text>
+    <circle cx="179" cy="256" r="2" fill="#7c998a"/>
+    <text x="195" y="262" font-size="16" fill="#acbeb4">Работает офлайн</text>
+    <circle cx="350" cy="256" r="2" fill="#7c998a"/>
+    <text x="366" y="262" font-size="16" fill="#acbeb4">Все годы в одном JSON</text>
+    <g transform="translate(717 41)">
+      <rect width="435" height="238" rx="16" fill="#0c251e" stroke="#50725e" stroke-opacity=".7"/>
+      <text x="25" y="37" fill="#e5eddd" font-size="15" font-weight="600">КОМАНДА · ПЛАН НА ГОД</text>
+      <circle cx="406" cy="31" r="5" fill="#c9dd82"/>
+      <path d="M0 55H435M105 55V238M170 55V238M235 55V238M300 55V238M365 55V238" stroke="#2b493b"/>
+      <g fill="#94af9e" font-size="10" font-weight="600">
+        <text x="123" y="77">ВЕСНА</text><text x="253" y="77">ЛЕТО</text><text x="380" y="77">ОСЕНЬ</text>
+      </g>
+      <g fill="#678673"><rect x="24" y="98" width="58" height="6" rx="3"/><rect x="24" y="133" width="45" height="6" rx="3"/><rect x="24" y="168" width="63" height="6" rx="3"/><rect x="24" y="203" width="52" height="6" rx="3"/></g>
+      <rect x="118" y="93" width="58" height="16" rx="5" fill="#c9dd82"/>
+      <rect x="282" y="93" width="53" height="16" rx="5" fill="#c9dd82"/>
+      <rect x="183" y="128" width="68" height="16" rx="5" fill="#8fc9c1"/>
+      <rect x="361" y="128" width="47" height="16" rx="5" fill="#8fc9c1"/>
+      <rect x="250" y="163" width="70" height="16" rx="5" fill="#e9bb82"/>
+      <rect x="381" y="163" width="27" height="16" rx="5" fill="#e9bb82"/>
+      <rect x="145" y="198" width="39" height="16" rx="5" fill="#b6b0d7"/>
+      <rect x="294" y="198" width="63" height="16" rx="5" fill="#b6b0d7"/>
+    </g>
+  </g>
+</svg>
