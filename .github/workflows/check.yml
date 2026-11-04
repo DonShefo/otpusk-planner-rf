@@ -11,12 +11,24 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # Зависимостей и сборки нет: приложение — один index.html. Проверка синтаксиса скриптов бандла,
-      # офлайн-режима (нет сетевых вызовов) и скрипта темы.
+      # Для пользователя приложение остаётся одним HTML. Зависимости нужны только для браузерных тестов.
       - run: node scripts/check.mjs
+      - run: node --test tests/core.test.mjs
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        with:
+          name: otpusk-planner-rf-3.0.0
+          path: |
+            index.html
+            README.md
+            LICENSE
+            docs/RELEASE-3.0.0.md
+          if-no-files-found: error

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<title>График отпусков · 3.0.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+/* Тема. Приоритет: data-theme родительской страницы портала (если открыт во фрейме того же origin или пришло сообщение zch-theme),
+   затем ?theme=light|dark, затем localStorage['zch-theme'], затем системная. Печать и экспорт в Excel всегда светлые. */
+(function(){
+  var d=document.documentElement;
+  function norm(v){return v==="dark"||v==="light"?v:null}
+  function sys(){return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}
+  function fromParent(){try{if(window.parent&&window.parent!==window)return norm(window.parent.document.documentElement.getAttribute("data-theme"))}catch(e){}return null}
+  function fromQuery(){try{return norm(new URLSearchParams(location.search).get("theme"))}catch(e){return null}}
+  function fromStore(){try{return norm(localStorage.getItem("zch-theme"))}catch(e){return null}}
+  var forced=null;
+  function apply(){d.setAttribute("data-theme",forced||fromParent()||fromQuery()||fromStore()||sys())}
+  apply();
+  try{var mq=window.matchMedia("(prefers-color-scheme: dark)");(mq.addEventListener?mq.addEventListener("change",apply):mq.addListener(apply))}catch(e){}
+  window.addEventListener("storage",function(e){if(e.key==="zch-theme")apply()});
+  window.addEventListener("message",function(e){if(e.source===window.parent&&e.data&&e.data.type==="zch-theme"&&norm(e.data.theme)){forced=e.data.theme;apply()}});
+  try{if(window.parent&&window.parent!==window){new MutationObserver(apply).observe(window.parent.document.documentElement,{attributes:true,attributeFilter:["data-theme"]})}}catch(e){}
+})();
+</script>
+
+</head>
+<body>
+
+
+<style>
+:root{
+  /* Токены дизайн-системы v2 портала (копия значений app/tokens/colors.css). Тема — атрибут data-theme на <html>. */
+  --bg:#f4f2eb;--surface:#fffdf8;--surface-2:#ece9df;--line:#dcd9ce;--line-strong:#c4bfb1;--ink:#18231f;--muted:#56655e;--primary-bg:#1c4d3f;--primary-fg:#ffffff;--primary-hover:#163f33;--danger:#a93f21;--danger-bg:#f7e3da;--danger-line:#e0b2a2;--danger-fg:#7f321d;--warn-bg:#f6f0dc;--warn-line:#ddd0a0;--warn-fg:#6a5312;--success-bg:#e7f1ea;--success-fg:#17503e;--info-bg:#eef6fb;--info-line:#d8e9f4;--info-fg:#3d4775;--focus:#1c4d3f;--field-line:#83847a;--shadow:0 1px 3px rgba(28,22,14,.07),0 2px 8px rgba(28,22,14,.04);
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Helvetica,Arial,sans-serif;
+  --radius:14px;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#101815;--surface:#16211d;--surface-2:#1c2924;--line:#29382f;--line-strong:#3a4c43;--ink:#ecebe4;--muted:#a2afa8;--primary-bg:#d8e886;--primary-fg:#12291f;--primary-hover:#e4f09c;--danger:#ee9572;--danger-bg:#3a2119;--danger-line:#7a4333;--danger-fg:#f2b09a;--warn-bg:#3a3318;--warn-line:#6b5d27;--warn-fg:#e6d58f;--success-bg:#173d31;--success-fg:#a9dcc6;--info-bg:#17303d;--info-line:#2f5a70;--info-fg:#a9d4ea;--focus:#d8e886;--field-line:#68756d;--shadow:0 1px 2px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:none;margin:0;padding:32px 40px 100px}
+
+header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+h1{font-size:24px;font-weight:700;letter-spacing:-.4px;color:var(--ink);margin:0;display:flex;align-items:center;gap:14px}
+.sub{color:var(--muted);font-size:13.5px;margin-top:8px;max-width:640px;line-height:1.65}
+
+.yearbox{display:inline-flex;align-items:center;background:var(--info-bg);border:1px solid var(--info-line);border-radius:11px;padding:3px;gap:2px}
+.yearbox button{border:none;background:transparent;font-size:16px;font-weight:700;color:var(--info-fg);padding:5px 12px;border-radius:8px;line-height:1;cursor:pointer;transition:background .1s}
+.yearbox button:hover{background:color-mix(in srgb,var(--surface) 70%,transparent)}
+.yearbox input{width:68px;text-align:center;border:none;background:transparent;font-size:18px;font-weight:700;color:var(--info-fg);padding:4px 0;font-family:var(--mono)}
+.yearbox input:focus{outline:none}
+
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{font-family:inherit;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 16px;border-radius:9px;cursor:pointer;transition:background .12s,border-color .12s;font-weight:500}
+button:hover{border-color:var(--line-strong);background:var(--surface-2)}
+button:disabled{opacity:.5;cursor:default}
+button.primary{background:var(--primary-bg);border-color:var(--primary-bg);color:var(--primary-fg)}
+button.primary:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
+button.ghost{background:transparent;border-color:transparent}
+button.ghost:hover{background:var(--surface-2);border-color:var(--line)}
+.setting{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted)}
+.setting input{width:56px;padding:7px 8px;border:1px solid var(--field-line);border-radius:8px;font-family:var(--mono);text-align:center;font-size:14px;background:var(--surface);color:var(--ink)}
+.setting input:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 1px var(--focus)}
+input[type=range]{-webkit-appearance:none;height:4px;border-radius:2px;background:var(--field-line);border:none;padding:0;cursor:pointer;vertical-align:middle}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--primary-bg);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--field-line)}
+input[type=range]:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+.setting .val{font-family:var(--mono);font-size:12px;min-width:36px;display:inline-block;color:var(--primary-bg);font-weight:600}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:20px;overflow:hidden;box-shadow:var(--shadow)}
+.panel>.hd{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.panel>.hd h2{font-size:15px;font-weight:600;color:var(--ink);letter-spacing:-.1px;margin:0}
+.panel>.bd{padding:22px}
+
+table.grid{width:100%;border-collapse:collapse;font-size:14px}
+table.grid th,table.grid td{border:1px solid var(--line);padding:8px 10px;text-align:center;white-space:nowrap}
+table.grid thead th{background:var(--surface-2);font-weight:600;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+table.grid thead th.part{background:var(--info-bg);color:var(--info-fg)}
+table.grid td.name,table.grid td.pos{text-align:left;vertical-align:top}
+table.grid input{border:1px solid transparent;background:transparent;color:var(--ink);font-family:inherit;font-size:14px;padding:4px 6px;border-radius:7px;width:100%}
+table.grid td.name input,table.grid td.pos input{min-width:140px}
+table.grid input[type=date]{font-family:var(--mono);width:136px}
+table.grid input.days{font-family:var(--mono);width:52px;text-align:center}
+table.grid input:hover{border-color:var(--field-line)}
+table.grid input:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 1px var(--focus);background:var(--surface)}
+
+td.name .nrow{display:flex;align-items:center;gap:7px}
+td.name .nrow2{display:flex;align-items:center;gap:9px;margin-top:6px;padding-left:28px}
+.iconbtn{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:4px 6px;border-radius:6px;flex:none}
+.iconbtn:hover{color:var(--danger-fg);background:var(--danger-bg)}
+.addpart{font-size:12px;padding:4px 11px;color:var(--info-fg);border:1px solid var(--info-line);border-radius:8px;background:var(--info-bg);cursor:pointer;font-family:inherit;font-weight:500}
+.addpart:hover{background:color-mix(in srgb,var(--info-fg) 10%,var(--info-bg))}
+.addpart:disabled{color:var(--muted);border-color:var(--line);cursor:not-allowed;background:var(--surface-2)}
+.pcount{font-size:12px;color:var(--muted);font-family:var(--mono)}
+td.end{font-family:var(--mono);color:var(--muted);font-size:13px;position:relative;padding-right:26px!important}
+td.end.shift{color:var(--warn-fg);font-weight:600}
+td.end .pdel{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:12px}
+.chip{display:inline-block;min-width:30px;font-family:var(--mono);font-weight:600;padding:3px 9px;border-radius:20px;font-size:13px}
+.chip.used{background:var(--info-bg);color:var(--info-fg)}
+.chip.left.pos{background:var(--success-bg);color:var(--success-fg)}
+.chip.left.zero{background:var(--surface-2);color:var(--muted)}
+.chip.bad{background:var(--danger-bg);color:var(--danger-fg)}
+.addemp-bar{margin-top:16px;display:flex;gap:12px;align-items:center}
+.scrollhint{font-size:13px;color:var(--muted);margin:0 0 14px}
+
+.flags{margin-top:16px;display:flex;flex-direction:column;gap:6px}
+.flag{font-size:13.5px;padding:10px 14px;border-radius:10px;display:flex;gap:9px;align-items:flex-start}
+.flag.err{background:var(--danger-bg);color:var(--danger-fg)}
+.flag.warn{background:var(--warn-bg);color:var(--warn-fg)}
+.flag b{font-weight:600}
+.flag .dot{flex:none;font-weight:700}
+
+.hol-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.holchip{display:inline-flex;align-items:center;gap:6px;background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-fg);font-family:var(--mono);font-size:13px;padding:4px 6px 4px 11px;border-radius:20px}
+.holchip button{border:none;background:transparent;color:var(--warn-fg);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:50%;line-height:1}
+.holchip button:hover{background:var(--warn-line)}
+.hol-empty{color:var(--muted);font-size:13.5px;padding:4px 0}
+.hol-addrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.hol-addrow input[type=date]{font-family:var(--mono);border:1px solid var(--field-line);border-radius:9px;padding:8px 10px;font-size:14px;background:var(--surface);color:var(--ink)}
+.hol-addrow input[type=date]:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 1px var(--focus)}
+.hol-status{font-size:13px;color:var(--muted);margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hol-status .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.hol-status.ok .dot{background:var(--success-fg)}
+.hol-status.err .dot{background:var(--danger)}
+.hol-status.warn .dot{background:var(--warn-fg)}
+.hol-status a{color:var(--primary-bg);text-decoration:underline;text-underline-offset:2px}
+
+.tl-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.tl{position:relative;font-size:12px}
+.tl-months{display:flex;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:3}
+.tl-month{border-right:1px solid var(--line);padding:8px 0 7px;text-align:center;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-size:11px;font-weight:600}
+.tl-namecol{position:sticky;left:0;background:var(--surface);z-index:4;border-right:1px solid var(--line)}
+.tl-bands{position:absolute;inset:0;z-index:0;pointer-events:none}
+.band-hol{position:absolute;top:0;bottom:0;background:var(--warn-bg)}
+.band-month{position:absolute;top:0;bottom:0;border-left:1px solid var(--line)}
+.tl-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line);position:relative;z-index:1}
+.tl-row:hover{background:var(--surface-2)}
+.tl-name{position:sticky;left:0;z-index:2;background:inherit;width:196px;min-width:196px;padding:0 12px;display:flex;align-items:center;gap:9px;border-right:1px solid var(--line);font-size:13px}
+.tl-row:hover .tl-name{background:var(--surface-2)}
+.tl-name .sw{width:10px;height:10px;border-radius:4px;flex:none}
+.tl-name .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-track{position:relative;height:38px;flex:1}
+.bar{position:absolute;top:9px;height:20px;border-radius:5px;cursor:pointer;display:flex;align-items:center;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.bar .lab{position:relative;z-index:1;background:inherit;border-radius:3px;font-family:var(--mono);font-size:10px;padding:0 5px;white-space:nowrap}
+.bar .hol-seg{position:absolute;top:0;bottom:0;background-image:repeating-linear-gradient(45deg,color-mix(in srgb,var(--surface) 55%,transparent) 0 3px,transparent 3px 6px)}
+.dimmed .bar{opacity:.18}
+.bar.hi{opacity:1!important;box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink);z-index:5}
+.bar.sel{opacity:1!important;box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--focus);z-index:6}
+.tl-density{display:flex;align-items:stretch;border-bottom:2px solid var(--line);position:relative;z-index:1;background:var(--surface)}
+.tl-density .tl-name{font-weight:600;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.dens-track{position:relative;height:30px;flex:1}
+.dens-day{position:absolute;bottom:0;border-radius:2px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.legend .k{display:inline-flex;align-items:center;gap:7px}
+.legend .b{width:14px;height:12px;border-radius:4px;display:inline-block}
+
+.conf-empty{color:var(--muted);font-size:14px;padding:4px 0}
+.conf{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:background .1s,border-color .1s}
+.conf:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.conf .when{font-family:var(--mono);font-size:14px;font-weight:600;white-space:nowrap;min-width:124px}
+.conf .cnt{font-family:var(--mono);font-weight:700;color:var(--danger-fg);min-width:50px}
+.conf .who{font-size:13.5px;color:var(--ink)}
+.conf-role{margin-top:6px;font-size:12.5px;color:var(--warn-fg)}
+.conf-role b{color:var(--warn-fg)}
+.detail{font-size:13.5px;color:var(--ink);background:var(--info-bg);border:1px solid var(--info-line);border-radius:10px;padding:12px 14px;margin-top:8px;display:none}
+.detail.on{display:block}
+.detail b{color:var(--info-fg)}
+.hint{color:var(--muted);font-size:13px;margin-top:0}
+
+@media print{
+  /* Печать всегда светлая, даже при тёмной теме экрана. */
+  :root,:root[data-theme="dark"],:root[data-theme="light"]{ --bg:#f4f2eb;--surface:#fffdf8;--surface-2:#ece9df;--line:#dcd9ce;--line-strong:#c4bfb1;--ink:#18231f;--muted:#56655e;--primary-bg:#1c4d3f;--primary-fg:#ffffff;--primary-hover:#163f33;--danger:#a93f21;--danger-bg:#f7e3da;--danger-line:#e0b2a2;--danger-fg:#7f321d;--warn-bg:#f6f0dc;--warn-line:#ddd0a0;--warn-fg:#6a5312;--success-bg:#e7f1ea;--success-fg:#17503e;--info-bg:#eef6fb;--info-line:#d8e9f4;--info-fg:#3d4775;--focus:#1c4d3f;--field-line:#83847a;--shadow:0 1px 3px rgba(28,22,14,.07),0 2px 8px rgba(28,22,14,.04); color-scheme:light; }
+  body{background:#fff}
+  .no-print{display:none!important}
+  .panel{break-inside:avoid;border-color:#ccc;box-shadow:none}
+  .tl-scroll{overflow:visible}
+}
+
+.filebar{display:flex;gap:12px 20px;flex-wrap:wrap;align-items:center;padding:18px 20px;margin-bottom:24px;border:1px solid var(--line-strong);border-radius:12px;background:var(--surface)}
+.filebar>div:first-child{flex:1 1 100%;min-width:0}
+.filebar small{flex-basis:100%;color:var(--muted)}
+.filebar details{flex-basis:100%}.filebar details .controls{margin-top:12px}
+#cacheWarning{color:var(--danger-fg);font-size:13px}#savedYears{font-size:13px;color:var(--muted)}
+.hol-status{display:block}.hol-status .dot{display:inline-block;margin-right:6px}
+#fileStatus{font-size:13px;margin-top:5px;color:var(--muted)}
+button:focus-visible,a:focus-visible,summary:focus-visible,.table-scroll:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.table-scroll{overflow:auto;max-height:65vh;isolation:isolate}
+table.grid{border-collapse:separate;border-spacing:0}
+table.grid td.name,table.grid th.name{position:sticky;left:0;z-index:2;background:var(--surface);min-width:210px;box-shadow:2px 0 0 var(--line)}
+table.grid thead th{position:sticky;top:0;z-index:3}
+table.grid thead tr:nth-child(2) th{top:34px}
+table.grid thead th.name{z-index:4;background:var(--surface-2)}
+.tl-row .tl-name{background:var(--surface)}
+.panel>.hd{flex-wrap:wrap}
+@media(max-width:800px){.wrap{padding:16px 12px 48px}.panel>.bd{padding:12px}.panel>.hd{padding:14px 12px}.filebar{padding:14px}.controls{gap:6px}h1{font-size:21px}header.top{gap:12px}.setting{flex-wrap:wrap}}
+@media print{.table-scroll{max-height:none;overflow:visible}table.grid th,table.grid td.name{position:static!important}.wrap{padding:0}.panel>.bd{padding:8px}}
+</style>
+
+
+
+
+<div class="wrap">
+  <section class="filebar no-print" aria-label="Рабочая база">
+    <div><strong>График отпусков · 3.0</strong><div id="fileStatus" role="status" aria-live="polite">Выбери или создай JSON-базу для сохранения всех лет.</div><div id="cacheWarning" role="alert"></div></div>
+    <div class="controls">
+      <button id="btnOpenDb">Открыть базу JSON</button>
+      <button id="btnNewDb">Сохранить как базу…</button>
+      <button id="btnWriteDb" class="primary">Сохранить базу</button>
+      <button id="btnReconnect" hidden>Подключить прежнюю базу</button>
+    </div>
+    <label><input type="checkbox" id="autoSave"> Автосохранение в подключённый файл</label>
+    <span id="savedYears"></span>
+    <small>Все годы хранятся в одном JSON. После смены сервера при необходимости выбери тот же файл. Резервную копию сохраняй отдельно.</small>
+    <details><summary>Без прямого доступа к файлам и восстановление</summary><div class="controls">
+      <button id="btnOpenFallback">Открыть JSON без подключения</button>
+      <button id="btnRollback" disabled>Вернуть предыдущую запись</button>
+      <button id="btnRecovery" hidden>Копия до открытия или импорта</button>
+      <button id="btnRawCache" hidden>Скачать повреждённую копию</button>
+    </div></details>
+  </section>
+  <main id="editor">
+  <header class="top">
+    <div>
+      <h1>График отпусков
+        <span class="yearbox no-print">
+          <button id="yPrev" title="Предыдущий год">‹</button>
+          <input id="yInput" type="number" min="2000" max="2100" aria-label="Год графика">
+          <button id="yNext" title="Следующий год">›</button>
+        </span>
+      </h1>
+      <div class="sub">Праздники по ст. 112 ТК РФ не расходуют дни отпуска (ст. 120). Обычные и перенесённые выходные входят в отпуск. «Конец» означает последний день отпуска. Состав, должности, норма и график сохраняются отдельно для каждого года. Новый год начинаетcя с копии состава и пустого графика.</div>
+    </div>
+    <div class="controls no-print" style="align-self:flex-start;margin-top:4px">
+      <label class="setting">Норма, дн. <input id="setAnnual" type="number" min="1" max="366"></label>
+      <label class="setting">Конфликт при &gt; <input id="setOverlap" type="number" min="1" max="2000"> чел.</label>
+      <label class="setting">Шрифт <input id="setZoom" type="range" min="75" max="130" step="5" style="width:80px"> <span id="setZoomVal" class="val">100%</span></label>
+      <label class="setting">График <input id="setTlScale" type="range" min="50" max="300" step="10" style="width:80px"> <span id="setTlScaleVal" class="val">100%</span></label>
+    </div>
+  </header>
+
+  <section class="panel" id="holPanel">
+    <div class="hd">
+      <h2 id="holTitle">Праздники для расчёта отпуска 2026</h2>
+      <div class="controls no-print">
+        <button id="btnHolOnline">Обновить через интернет</button>
+        <button id="btnHolUpdate" class="ghost">Восстановить встроенные</button>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="hol-list" id="holList"></div>
+      <div class="hol-addrow no-print">
+        <input type="date" id="holInput" aria-label="Дополнительная праздничная дата">
+        <button id="btnHolAdd">+ Добавить дату вручную</button>
+      </div>
+      <div class="hol-status" id="holStatus"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="hd">
+      <h2>Сотрудники и части отпуска</h2>
+      <div class="controls no-print">
+        <button id="btnSort" class="ghost">Сортировать по фамилии</button>
+        <button id="btnSave">Скачать JSON</button>
+        <button id="btnImport">Добавить из JSON</button>
+        <button id="btnXlsx">Экспорт в Excel</button>
+        <button class="ghost" id="btnPrint">Печать</button>
+        <input type="file" id="fileImport" accept=".json,application/json" style="display:none">
+      </div>
+    </div>
+    <div class="bd">
+      <p class="scrollhint no-print">Управление (удалить сотрудника, добавить/убрать часть) — в левой колонке. Даты частей листаются вправо&nbsp;↔</p>
+      <div class="table-scroll" tabindex="0" aria-label="Таблица отпусков, прокрутка вправо"><table class="grid" id="tbl"></table></div>
+      <div class="addemp-bar no-print"><button class="primary" id="btnAdd">+ Добавить сотрудника</button></div>
+      <div class="flags" id="flags"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="hd">
+      <h2>График года — пересечения</h2>
+      <div class="hint no-print" style="margin:0">Клик по полосе — подсветить, кто пересекается с этим отпуском</div>
+    </div>
+    <div class="bd">
+      <div class="tl-scroll"><div class="tl" id="tl"></div></div>
+      <div class="legend">
+        <span class="k"><span class="b" style="background:var(--warn-bg);box-shadow:inset 0 0 0 1px var(--warn-fg)"></span>праздничный день</span>
+        <span class="k"><span class="b" style="background-image:repeating-linear-gradient(45deg,var(--surface) 0 3px,transparent 3px 6px);background-color:var(--muted)"></span>праздник внутри отпуска (не тратит дни)</span>
+        <span class="k"><span class="b" style="background:var(--danger)"></span>превышение порога одновременных отпусков</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="hd"><h2>Окна перегрузки</h2></div>
+    <div class="bd">
+      <div id="conflicts"></div>
+      <div class="detail" id="detail"></div>
+    </div>
+  </section>
+  </main>
+</div>
+
+<!-- PLANNER_SCRIPTS -->
+
+
+</body></html>
