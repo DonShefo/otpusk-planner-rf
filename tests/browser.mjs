@@ -48,6 +48,7 @@ try{
  check(Object.keys((await cache(p)).rosters).join(',')==='2025,2026,2027,2028','Импорт добавляет год без потери истории');
  const downloadPromise=p.waitForEvent('download');await p.locator('#btnSave').click();
  const download=await downloadPromise,path=join(temp,'base.json');await download.saveAs(path);
+ check(download.suggestedFilename().startsWith('vacation-planner-backup-'),'Понятное английское имя JSON');
  const exported=JSON.parse(readFileSync(path,'utf8'));
  check(exported._ver===3&&exported.schedules[2025].e1[0].days===14,'Выгрузка JSON содержит все годы');
  const clean=await pageFor();await importFile(clean.page,readFileSync(path,'utf8'),'open');
@@ -100,6 +101,7 @@ try{
  check(badXML,'Отклонён календарь другого года');
  const xlsxPromise=p.waitForEvent('download');await p.locator('#btnXlsx').click();
  const xlsx=await xlsxPromise;await xlsx.saveAs(join(temp,'plan.xlsx'));
+ check(xlsx.suggestedFilename()==='vacation-schedule-2026.xlsx','Английское имя Excel');
  check(readFileSync(join(temp,'plan.xlsx')).subarray(0,2).toString()==='PK','Excel сохранён как ZIP/XLSX');
  // Viewports, sticky identity column, dark theme and print.
  await p.locator('.table-scroll').evaluate(el=>el.scrollLeft=500);
@@ -110,6 +112,21 @@ try{
  await p.emulateMedia({colorScheme:'dark'});
  await p.waitForFunction(()=>document.documentElement.dataset.theme==='dark');
  check(await p.locator('html').getAttribute('data-theme')==='dark','Системная тёмная тема');
+ const dataBeforeTheme=JSON.stringify(await cache(p));
+ await p.locator('#themeSelect').selectOption('light');
+ check(await p.locator('html').getAttribute('data-theme')==='light','Светлая тема выбирается при тёмной системной');
+ check(JSON.stringify(await cache(p))===dataBeforeTheme,'Тема не меняет базу отпусков');
+ if(screenshots)await p.screenshot({path:join(screenshots,'planner-selected-light.png'),fullPage:true});
+ await p.reload();
+ check(await p.locator('html').getAttribute('data-theme')==='light'&&await p.locator('#themeSelect').inputValue()==='light','Светлая тема сохраняется после перезапуска');
+ await p.locator('#themeSelect').selectOption('dark');
+ check(await p.locator('html').getAttribute('data-theme')==='dark','Явная тёмная тема');
+ await p.locator('#themeSelect').selectOption('auto');
+ await p.emulateMedia({colorScheme:'light'});
+ await p.waitForFunction(()=>document.documentElement.dataset.theme==='light');
+ check(true,'Авто снова следует системе');
+ await p.emulateMedia({colorScheme:'dark'});
+ await p.waitForFunction(()=>document.documentElement.dataset.theme==='dark');
  if(screenshots)await p.screenshot({path:join(screenshots,'planner-dark.png'),fullPage:true});
  await p.setViewportSize({width:390,height:844});
  check(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Нет горизонтального выхода страницы на мобильном');
@@ -120,6 +137,8 @@ try{
  await context.close();
  const blocked=await pageFor(()=>{Storage.prototype.getItem=function(){throw Error('blocked');};Storage.prototype.setItem=function(){throw Error('blocked');};});
  check((await blocked.page.locator('#cacheWarning').innerText()).includes('не сохраняет'),'Блокировка localStorage не ломает приложение');
+ await blocked.page.locator('#themeSelect').selectOption('light');
+ check(await blocked.page.locator('html').getAttribute('data-theme')==='light','Выбор темы работает при заблокированном хранилище');
  await blocked.page.locator('#btnAdd').click();check(await blocked.page.locator('#tbl tbody tr').count()===2,'Редактирование без localStorage');await blocked.context.close();
  const corrupt=await pageFor(()=>localStorage.setItem('grafik_otpuskov_v3','{broken'));
  check((await corrupt.page.locator('#fileStatus').innerText()).includes('не перезаписана'),'Повреждённая локальная копия не скрывается');

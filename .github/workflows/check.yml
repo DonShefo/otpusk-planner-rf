@@ -23,12 +23,30 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+      - run: npm run package
       - uses: actions/upload-artifact@v4
         with:
-          name: otpusk-planner-rf-3.0.0
-          path: |
-            index.html
-            README.md
-            LICENSE
-            docs/RELEASE-3.0.0.md
+          name: vacation-planner
+          path: dist/
           if-no-files-found: error
+
+  release:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    concurrency:
+      group: vacation-planner-release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/package-release.mjs
+      - name: Publish versioned HTML release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/publish-release.sh

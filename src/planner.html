@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru"><head>
 <meta charset="utf-8">
-<title>График отпусков · 3.0.0</title>
+<title>График отпусков · 3.0.1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>
-/* Тема. Приоритет: data-theme родительской страницы портала (если открыт во фрейме того же origin или пришло сообщение zch-theme),
-   затем ?theme=light|dark, затем localStorage['zch-theme'], затем системная. Печать и экспорт в Excel всегда светлые. */
+/* Явный выбор темы хранится отдельно от настроек портала. Режим «Авто» наследует
+   тему родителя, параметр URL, zch-theme или системную тему. Печать всегда светлая. */
 (function(){
   var d=document.documentElement;
   function norm(v){return v==="dark"||v==="light"?v:null}
@@ -13,13 +13,23 @@
   function fromParent(){try{if(window.parent&&window.parent!==window)return norm(window.parent.document.documentElement.getAttribute("data-theme"))}catch(e){}return null}
   function fromQuery(){try{return norm(new URLSearchParams(location.search).get("theme"))}catch(e){return null}}
   function fromStore(){try{return norm(localStorage.getItem("zch-theme"))}catch(e){return null}}
-  var forced=null;
-  function apply(){d.setAttribute("data-theme",forced||fromParent()||fromQuery()||fromStore()||sys())}
+  var themeKey="vacation-planner-theme", forced=null;
+  function preference(){try{return norm(localStorage.getItem(themeKey))||"auto"}catch(e){return "auto"}}
+  var selected=preference();
+  function apply(){
+    d.setAttribute("data-theme",norm(selected)||forced||fromParent()||fromQuery()||fromStore()||sys());
+    var picker=document.getElementById("themeSelect");if(picker)picker.value=selected;
+  }
   apply();
   try{var mq=window.matchMedia("(prefers-color-scheme: dark)");(mq.addEventListener?mq.addEventListener("change",apply):mq.addListener(apply))}catch(e){}
-  window.addEventListener("storage",function(e){if(e.key==="zch-theme")apply()});
+  window.addEventListener("storage",function(e){if(e.key===themeKey||e.key===null)selected=preference();if(e.key===themeKey||e.key==="zch-theme"||e.key===null)apply()});
   window.addEventListener("message",function(e){if(e.source===window.parent&&e.data&&e.data.type==="zch-theme"&&norm(e.data.theme)){forced=e.data.theme;apply()}});
   try{if(window.parent&&window.parent!==window){new MutationObserver(apply).observe(window.parent.document.documentElement,{attributes:true,attributeFilter:["data-theme"]})}}catch(e){}
+  document.addEventListener("DOMContentLoaded",function(){
+    var picker=document.getElementById("themeSelect");
+    picker.value=selected;
+    picker.addEventListener("change",function(){selected=norm(picker.value)||"auto";try{localStorage.setItem(themeKey,selected)}catch(e){}apply()});
+  });
 })();
 </script>
 
@@ -186,6 +196,8 @@ td.end .pdel{position:absolute;right:4px;top:50%;transform:translateY(-50%);font
 #cacheWarning{color:var(--danger-fg);font-size:13px}#savedYears{font-size:13px;color:var(--muted)}
 .hol-status{display:block}.hol-status .dot{display:inline-block;margin-right:6px}
 #fileStatus{font-size:13px;margin-top:5px;color:var(--muted)}
+#themeSelect{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--field-line);border-radius:8px;padding:6px 10px}
+#themeSelect:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 button:focus-visible,a:focus-visible,summary:focus-visible,.table-scroll:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 .table-scroll{overflow:auto;max-height:65vh;isolation:isolate}
 table.grid{border-collapse:separate;border-spacing:0}
@@ -204,7 +216,7 @@ table.grid thead th.name{z-index:4;background:var(--surface-2)}
 
 <div class="wrap">
   <section class="filebar no-print" aria-label="Рабочая база">
-    <div><strong>График отпусков · 3.0</strong><div id="fileStatus" role="status" aria-live="polite">Выбери или создай JSON-базу для сохранения всех лет.</div><div id="cacheWarning" role="alert"></div></div>
+    <div><strong>График отпусков · 3.0.1</strong><div id="fileStatus" role="status" aria-live="polite">Выбери или создай JSON-базу для сохранения всех лет.</div><div id="cacheWarning" role="alert"></div></div>
     <div class="controls">
       <button id="btnOpenDb">Открыть базу JSON</button>
       <button id="btnNewDb">Сохранить как базу…</button>
@@ -234,6 +246,7 @@ table.grid thead th.name{z-index:4;background:var(--surface-2)}
       <div class="sub">Праздники по ст. 112 ТК РФ не расходуют дни отпуска (ст. 120). Обычные и перенесённые выходные входят в отпуск. «Конец» означает последний день отпуска. Состав, должности, норма и график сохраняются отдельно для каждого года. Новый год начинаетcя с копии состава и пустого графика.</div>
     </div>
     <div class="controls no-print" style="align-self:flex-start;margin-top:4px">
+      <label class="setting">Тема <select id="themeSelect"><option value="auto">Авто</option><option value="light">Светлая</option><option value="dark">Тёмная</option></select></label>
       <label class="setting">Норма, дн. <input id="setAnnual" type="number" min="1" max="366"></label>
       <label class="setting">Конфликт при &gt; <input id="setOverlap" type="number" min="1" max="2000"> чел.</label>
       <label class="setting">Шрифт <input id="setZoom" type="range" min="75" max="130" step="5" style="width:80px"> <span id="setZoomVal" class="val">100%</span></label>

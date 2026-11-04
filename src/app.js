@@ -528,7 +528,7 @@
 
     document.getElementById("btnXlsx").onclick=()=>{
       const bytes=buildXlsx(tableRows(),"График отпусков "+state.year);
-      download(`grafik_otpuskov_${state.year}.xlsx`,bytes,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      download(`vacation-schedule-${state.year}.xlsx`,bytes,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     };
 
 
@@ -557,7 +557,7 @@
     function exportJson(){
       const text=serialized();
       parseDatabase(text);
-      download(`grafik_otpuskov_all_${new Date().toISOString().replace(/[:.]/g,'-')}.json`,text,'application/json');
+      download(`vacation-planner-backup-${new Date().toISOString().replace(/[:.]/g,'-')}.json`,text,'application/json');
       exportedSnapshot=fingerprint();
       status('JSON передан браузеру для скачивания. Проверь файл в «Документах» или «Загрузках». Прямую запись эта операция не подтверждает.');
     }
@@ -627,7 +627,7 @@
       if(!window.showSaveFilePicker){exportJson();return;}
       setBusy(true); saving=true;let completed=false;
       try{
-        const handle=await window.showSaveFilePicker({...pickerOptions,suggestedName:'grafik_otpuskov_all.json',startIn:'documents'});
+        const handle=await window.showSaveFilePicker({...pickerOptions,suggestedName:'vacation-planner-data.json',startIn:'documents'});
         const previousText=await PlannerStorage.read(handle);
         let previous=null;
         if(previousText.trim()){

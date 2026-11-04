@@ -1,0 +1,18 @@
+import {mkdirSync,readFileSync,writeFileSync,copyFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+import {build} from './build.mjs';
+const root=new URL('../',import.meta.url);
+const {version}=JSON.parse(readFileSync(new URL('package.json',root),'utf8'));
+assert(/^\d+\.\d+\.\d+$/.test(version),'Version must be a stable semver');
+const html=readFileSync(new URL('index.html',root),'utf8');
+assert.equal(html,build(),'Build is out of date');
+assert(html.includes('График отпусков · '+version),'HTML version differs from package.json');
+const out=new URL('dist/',root);mkdirSync(out,{recursive:true});
+writeFileSync(new URL('vacation-planner.html',out),html);
+copyFileSync(new URL('README.md',root),new URL('README.md',out));
+copyFileSync(new URL('LICENSE',root),new URL('LICENSE',out));
+copyFileSync(new URL(`docs/RELEASE-${version}.md`,root),new URL('RELEASE-NOTES.md',out));
+const hash=createHash('sha256').update(html).digest('hex');
+writeFileSync(new URL('SHA256SUMS.txt',out),`${hash}  vacation-planner.html\n`);
+console.log(`Packaged vacation-planner.html v${version}: ${hash}`);
